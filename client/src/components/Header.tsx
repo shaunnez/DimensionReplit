@@ -199,6 +199,7 @@ const animations = [
 export function Header({ title, subtitle }: { title?: string, subtitle?: string }) {
   const [showAnimation, setShowAnimation] = useState(false);
   const [currentAnimation, setCurrentAnimation] = useState(0);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
     if (showAnimation) {
@@ -208,6 +209,19 @@ export function Header({ title, subtitle }: { title?: string, subtitle?: string 
       return () => clearTimeout(timer);
     }
   }, [showAnimation]);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const triggerAnimation = () => {
     setCurrentAnimation(Math.floor(Math.random() * animations.length));
@@ -240,9 +254,17 @@ export function Header({ title, subtitle }: { title?: string, subtitle?: string 
           </div>
           <button
             onClick={triggerAnimation}
-            className="w-8 h-8 rounded-full border border-neon-cyan bg-neon-cyan/20 flex items-center justify-center animate-pulse hover:bg-neon-cyan/40 transition-colors"
+            className={`w-8 h-8 rounded-full border flex items-center justify-center animate-pulse transition-colors ${
+              isOffline
+                ? 'border-red-500 bg-red-500/20 hover:bg-red-500/40'
+                : 'border-neon-cyan bg-neon-cyan/20 hover:bg-neon-cyan/40'
+            }`}
           >
-            <div className="w-2 h-2 bg-neon-cyan rounded-full shadow-[0_0_10px_#00f0ff]" />
+            <div className={`w-2 h-2 rounded-full ${
+              isOffline
+                ? 'bg-red-500 shadow-[0_0_10px_#ef4444]'
+                : 'bg-neon-cyan shadow-[0_0_10px_#00f0ff]'
+            }`} />
           </button>
         </div>
       </header>
