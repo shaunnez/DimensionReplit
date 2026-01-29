@@ -96,34 +96,74 @@ export function generateICS(event: Event, festivalStartDate: Date): string {
 }
 
 /**
- * Download ICS file or share it
+ * Generate Google Calendar URL
  */
-export function downloadOrShareICS(event: Event, festivalStartDate: Date) {
+export function generateGoogleCalendarURL(event: Event, festivalStartDate: Date): string {
+  const startDateTime = parseEventDateTime(festivalStartDate, event.day, event.startTime);
+
+  let endDateTime: Date;
+  if (event.endTime) {
+    endDateTime = parseEventDateTime(festivalStartDate, event.day, event.endTime);
+    if (endDateTime < startDateTime) {
+      endDateTime.setDate(endDateTime.getDate() + 1);
+    }
+  } else if (event.lengthMinutes) {
+    endDateTime = new Date(startDateTime.getTime() + event.lengthMinutes * 60000);
+  } else {
+    endDateTime = new Date(startDateTime.getTime() + 60 * 60000);
+  }
+
+  // Format dates for Google Calendar (YYYYMMDDTHHmmss)
+  const formatGoogleDate = (date: Date) => {
+    return formatICSDate(date).replace(/[-:]/g, '');
+  };
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: event.name,
+    dates: `${formatGoogleDate(startDateTime)}/${formatGoogleDate(endDateTime)}`,
+    details: `${event.name} at ${event.location}${event.description ? '\n\n' + event.description : ''}`,
+    location: event.location,
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+/**
+ * Download ICS file
+ */
+export function downloadICS(event: Event, festivalStartDate: Date) {
   const icsContent = generateICS(event, festivalStartDate);
   const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
   const filename = `${event.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.ics`;
 
-  // Try Web Share API first (better on mobile)
-  if (navigator.share && navigator.canShare) {
-    const file = new File([blob], filename, { type: 'text/calendar' });
+  // For iOS, try to open the ICS file directly
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-    if (navigator.canShare({ files: [file] })) {
-      navigator.share({
-        files: [file],
-        title: `Add ${event.name} to Calendar`,
-        text: `${event.name} at ${event.location}`
-      }).catch((error) => {
-        // If share fails, fall back to download
-        if (error.name !== 'AbortError') {
-          downloadICSFile(blob, filename);
-        }
-      });
-      return;
-    }
+  if (isIOS) {
+    // Create data URL for iOS
+    const dataUrl = URL.createObjectURL(blob);
+    window.location.href = dataUrl;
+    setTimeout(() => URL.revokeObjectURL(dataUrl), 100);
+  } else {
+    downloadICSFile(blob, filename);
   }
+}
 
-  // Fallback to direct download
-  downloadICSFile(blob, filename);
+/**
+ * Open Google Calendar with event
+ */
+export function openGoogleCalendar(event: Event, festivalStartDate: Date) {
+  const url = generateGoogleCalendarURL(event, festivalStartDate);
+  window.open(url, '_blank');
+}
+
+/**
+ * Legacy function - kept for compatibility
+ * @deprecated Use downloadICS or openGoogleCalendar instead
+ */
+export function downloadOrShareICS(event: Event, festivalStartDate: Date) {
+  downloadICS(event, festivalStartDate);
 }
 
 /**

@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Event, EventStatus, FESTIVAL_START_DATE } from '../data';
 import { useSchedule } from '@/hooks/use-schedule';
-import { Star, ThumbsUp, CheckCircle, Circle, Calendar } from 'lucide-react';
-import { cn, downloadOrShareICS } from '@/lib/utils';
+import { Star, ThumbsUp, CheckCircle, Circle, Calendar, Apple } from 'lucide-react';
+import { cn, downloadICS, openGoogleCalendar } from '@/lib/utils';
 import { useState } from 'react';
 import {
   Drawer,
@@ -55,8 +55,12 @@ export function EventCard({ event, compact = false }: EventCardProps) {
     // Don't close drawer - let user continue interacting with the modal
   };
 
-  const handleAddToCalendar = () => {
-    downloadOrShareICS(event, FESTIVAL_START_DATE);
+  const handleGoogleCalendar = () => {
+    openGoogleCalendar(event, FESTIVAL_START_DATE);
+  };
+
+  const handleAppleCalendar = () => {
+    downloadICS(event, FESTIVAL_START_DATE);
   };
 
   return (
@@ -142,15 +146,25 @@ export function EventCard({ event, compact = false }: EventCardProps) {
 
           {/* Add to Calendar Section */}
           <div className="p-4 mt-4 border-t border-white/10">
-            <Button
-              onClick={handleAddToCalendar}
-              className="w-full bg-neon-cyan/20 hover:bg-neon-cyan/30 text-neon-cyan border border-neon-cyan/30"
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              Add to Calendar
-            </Button>
+            <h3 className="font-display text-sm uppercase tracking-wider text-white mb-3">Add to Calendar</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                onClick={handleGoogleCalendar}
+                className="h-20 flex flex-col items-center justify-center gap-2 bg-neon-cyan/20 hover:bg-neon-cyan/30 text-neon-cyan border border-neon-cyan/30"
+              >
+                <Calendar className="w-6 h-6" />
+                <span className="font-display text-xs uppercase">Google</span>
+              </Button>
+              <Button
+                onClick={handleAppleCalendar}
+                className="h-20 flex flex-col items-center justify-center gap-2 bg-neon-magenta/20 hover:bg-neon-magenta/30 text-neon-magenta border border-neon-magenta/30"
+              >
+                <Apple className="w-6 h-6" />
+                <span className="font-display text-xs uppercase">Apple/iOS</span>
+              </Button>
+            </div>
             <p className="text-xs text-muted-foreground text-center mt-2">
-              Download event to your device calendar
+              Choose your preferred calendar app
             </p>
           </div>
 
