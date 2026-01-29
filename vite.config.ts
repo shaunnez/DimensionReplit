@@ -7,7 +7,7 @@ import { metaImagesPlugin } from "./vite-plugin-meta-images";
 
 export default defineConfig({
   // GitHub Pages base path - set to repo name or empty string for custom domain
-  base: process.env.GITHUB_PAGES ? '/DimensionReplit/' : '/',
+  base: '/DimensionReplit/',
   plugins: [
     react(),
     runtimeErrorOverlay(),
