@@ -76,7 +76,7 @@ export function EventCard({ event, compact = false }: EventCardProps) {
   };
 
   return (
-    <Drawer shouldScaleBackground={false} modal={true} open={open} onOpenChange={setOpen}>
+    <Drawer shouldScaleBackground={false} modal={false} open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <motion.div
           layoutId={`card-${event.id}`}
