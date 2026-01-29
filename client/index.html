@@ -26,26 +26,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   
-  <script>
-  (function () {
-    var base = "/DimensionReplit/";
-    var url = new URL(window.location.href);
 
-    var p = url.searchParams.get("p");
-    var q = url.searchParams.get("q");
-    var h = url.searchParams.get("h");
-
-    if (!p) return;
-
-    var newUrl =
-      base +
-      p +
-      (q ? "?" + decodeURIComponent(q) : "") +
-      (h ? "#" + decodeURIComponent(h) : "");
-
-    window.history.replaceState(null, "", newUrl);
-  })();
-</script>
   </head>
   <body>
     <div id="root"></div>
