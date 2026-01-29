@@ -1,15 +1,17 @@
 import { motion } from 'framer-motion';
 import { useLocation } from 'wouter';
-import { Tent, Music, Calendar, Zap } from 'lucide-react';
+import { Tent, Music, Calendar, Flame, Eye, Clock, Map } from 'lucide-react';
 
 export default function Home() {
   const [, setLocation] = useLocation();
 
   const menuItems = [
+    { title: 'Music', subtitle: 'DJs & Artists', icon: Music, href: '/music', color: 'text-neon-cyan', border: 'group-hover:border-neon-cyan' },
+    { title: 'Performers', subtitle: 'Fire & Flow', icon: Flame, href: '/performers', color: 'text-neon-magenta', border: 'group-hover:border-neon-magenta' },
     { title: 'Workshops', subtitle: 'Heal & Learn', icon: Tent, href: '/workshops', color: 'text-neon-green', border: 'group-hover:border-neon-green' },
-    { title: 'Music', subtitle: 'Timetables', icon: Music, href: '/music', color: 'text-neon-cyan', border: 'group-hover:border-neon-cyan' },
-    { title: 'Performers', subtitle: 'Fire & Flow', icon: Zap, href: '/music', color: 'text-neon-magenta', border: 'group-hover:border-neon-magenta' },
-    { title: 'My Plan', subtitle: 'Your Schedule', icon: Calendar, href: '/schedule', color: 'text-neon-yellow', border: 'group-hover:border-neon-yellow' },
+    { title: 'VJs', subtitle: 'Visual Artists', icon: Eye, href: '/vjs', color: 'text-neon-magenta', border: 'group-hover:border-neon-magenta' },
+    { title: 'Info', subtitle: 'Key Times & Map', icon: Clock, href: '/info', color: 'text-neon-yellow', border: 'group-hover:border-neon-yellow' },
+    { title: 'My Plan', subtitle: 'Your Schedule', icon: Calendar, href: '/schedule', color: 'text-white', border: 'group-hover:border-white' },
   ];
 
   return (

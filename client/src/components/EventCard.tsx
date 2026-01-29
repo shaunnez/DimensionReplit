@@ -3,6 +3,7 @@ import { Event, EventStatus } from '../data';
 import { useSchedule } from '@/hooks/use-schedule';
 import { Star, ThumbsUp, CheckCircle, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 import {
   Drawer,
   DrawerContent,
@@ -31,9 +32,32 @@ export function EventCard({ event, compact = false }: EventCardProps) {
   const { getStatus, toggleStatus } = useSchedule();
   const status = getStatus(event.id);
   const config = statusConfig[status];
+  const [open, setOpen] = useState(false);
+
+  // Helper to format time display
+  const formatTime = (time: string) => {
+    // If time is in 24h format (e.g., "14:30"), convert to 12h
+    if (time.includes(':') && !time.includes(' ')) {
+      const [h, m] = time.split(':').map(Number);
+      const period = h >= 12 ? 'PM' : 'AM';
+      const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+      return `${hour12}:${m.toString().padStart(2, '0')} ${period}`;
+    }
+    return time;
+  };
+
+  const timeDisplay = event.endTime
+    ? `${formatTime(event.startTime)} - ${formatTime(event.endTime)}`
+    : formatTime(event.startTime);
+
+  const handleToggle = (newStatus: EventStatus) => {
+    toggleStatus(event.id, newStatus);
+    // Close drawer after a short delay to show the selection feedback
+    setTimeout(() => setOpen(false), 300);
+  };
 
   return (
-    <Drawer>
+    <Drawer shouldScaleBackground={false} modal={true} open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <motion.div
           layoutId={`card-${event.id}`}
@@ -46,34 +70,36 @@ export function EventCard({ event, compact = false }: EventCardProps) {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs font-mono text-neon-magenta tracking-wider uppercase bg-neon-magenta/10 px-2 py-0.5 rounded">
-                  {event.startTime}
+                  {formatTime(event.startTime)}
                 </span>
                 {status !== 'none' && (
                   <config.icon className={cn("w-3 h-3", config.color)} />
                 )}
               </div>
               <h3 className="text-lg font-bold font-display text-white leading-tight mb-1">
-                {event.title}
+                {event.name}
               </h3>
               <p className="text-sm text-muted-foreground font-ui uppercase tracking-widest">
                 {event.location}
               </p>
             </div>
-            
+
             <div className={cn(
               "w-1 h-12 rounded-full ml-3 self-center",
-              event.category === 'music' ? "bg-neon-cyan" : 
-              event.category === 'workshop' ? "bg-neon-green" : "bg-neon-yellow"
+              event.category === 'music' ? "bg-neon-cyan" :
+              event.category === 'workshop' ? "bg-neon-green" :
+              event.category === 'performer' ? "bg-neon-magenta" :
+              event.category === 'vj' ? "bg-neon-yellow" : "bg-neon-cyan"
             )} />
           </div>
         </motion.div>
       </DrawerTrigger>
-      
+
       <DrawerContent className="bg-card border-t border-white/10">
         <div className="mx-auto w-full max-w-sm">
           <DrawerHeader>
-            <DrawerTitle className="text-2xl font-display text-white">{event.title}</DrawerTitle>
-            <DrawerDescription className="font-ui text-lg text-neon-magenta">{event.startTime} • {event.location}</DrawerDescription>
+            <DrawerTitle className="text-2xl font-display text-white">{event.name}</DrawerTitle>
+            <DrawerDescription className="font-ui text-lg text-neon-magenta">{timeDisplay} • {event.location}</DrawerDescription>
           </DrawerHeader>
           <div className="p-4 pb-0 grid grid-cols-2 gap-3">
             {(Object.keys(statusConfig) as EventStatus[]).map((s) => {
@@ -91,7 +117,7 @@ export function EventCard({ event, compact = false }: EventCardProps) {
                     isActive && conf.bg,
                     isActive && "border-current"
                   )}
-                  onClick={() => toggleStatus(event.id, isActive ? 'none' : s)}
+                  onClick={() => handleToggle(isActive ? 'none' : s)}
                 >
                   <Icon className={cn("w-8 h-8", conf.color)} />
                   <span className={cn("font-display text-xs uppercase", conf.color)}>{conf.label}</span>
@@ -104,7 +130,7 @@ export function EventCard({ event, compact = false }: EventCardProps) {
                   "h-24 flex flex-col items-center justify-center gap-2 border-white/10 hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive",
                   status === 'none' && "opacity-50"
                 )}
-                onClick={() => toggleStatus(event.id, 'none')}
+                onClick={() => handleToggle('none')}
               >
                 <Circle className="w-8 h-8" />
                 <span className="font-display text-xs uppercase">Clear</span>
