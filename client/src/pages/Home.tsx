@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useLocation } from 'wouter';
-import { Tent, Music, Calendar, Flame, Eye, Clock } from 'lucide-react';
+import { Tent, Music, Calendar, Flame, Eye, Clock, Users } from 'lucide-react';
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -11,6 +11,7 @@ export default function Home() {
     { title: 'Workshops', subtitle: 'Heal & Learn', icon: Tent, href: '/workshops', color: 'text-neon-green', glowColor: 'rgba(0, 255, 136, 0.3)' },
     { title: 'VJs', subtitle: 'Visual Artists', icon: Eye, href: '/vjs', color: 'text-neon-magenta', glowColor: 'rgba(255, 0, 255, 0.3)' },
     { title: 'Info', subtitle: 'Key Times & Map', icon: Clock, href: '/info', color: 'text-neon-yellow', glowColor: 'rgba(255, 255, 0, 0.3)' },
+    { title: 'Friends', subtitle: 'Share & Compare', icon: Users, href: '/friends', color: 'text-neon-cyan', glowColor: 'rgba(0, 240, 255, 0.3)' },
     { title: 'My Plan', subtitle: 'Your Schedule', icon: Calendar, href: '/schedule', color: 'text-white', glowColor: 'rgba(255, 255, 255, 0.2)' },
   ];
 
