@@ -110,11 +110,6 @@ export default function Timetable({ category, title }: TimetableProps) {
                   <div className="absolute top-2 right-2 p-2 bg-background/80 backdrop-blur-sm rounded-lg border border-white/10">
                     <Maximize2 className="w-4 h-4 text-neon-green" />
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-background/90 to-transparent">
-                    <p className="text-xs text-muted-foreground text-center font-mono">
-                      Tap to view fullscreen
-                    </p>
-                  </div>
                 </div>
               </DrawerTrigger>
               <DrawerContent className="h-[95vh] bg-background border-t border-white/10">
@@ -130,23 +125,12 @@ export default function Timetable({ category, title }: TimetableProps) {
                     </Button>
                   </DrawerClose>
                 </DrawerHeader>
-                <div className="flex-1 overflow-auto p-4">
-                  <div className="relative w-full h-full flex items-center justify-center">
-                    <img
-                      src={`${import.meta.env.BASE_URL}map.PNG`}
-                      alt="Dimension Festival Site Map - Fullscreen"
-                      className="max-w-full max-h-full object-contain"
-                      style={{
-                        touchAction: 'pinch-zoom pan-x pan-y',
-                        userSelect: 'none'
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="border-t border-white/10 p-4">
-                  <p className="text-xs text-muted-foreground text-center font-mono">
-                    Pinch to zoom • Drag to pan • Two-finger scroll
-                  </p>
+                <div className="flex-1 overflow-auto">
+                  <img
+                    src={`${import.meta.env.BASE_URL}map.PNG`}
+                    alt="Dimension Festival Site Map - Fullscreen"
+                    className="w-full h-auto"
+                  />
                 </div>
               </DrawerContent>
             </Drawer>

@@ -7,12 +7,12 @@ export function Navigation() {
 
   const navItems = [
     { href: '/', icon: Home, label: 'Home' },
+    { href: '/schedule', icon: Calendar, label: 'My Plan' },
     { href: '/music', icon: Music, label: 'Music' },
     { href: '/performers', icon: Flame, label: 'Performers' },
     { href: '/workshops', icon: Tent, label: 'Workshops' },
     { href: '/vjs', icon: Eye, label: 'VJs' },
     { href: '/info', icon: Clock, label: 'Info' },
-    { href: '/schedule', icon: Calendar, label: 'My Plan' },
   ];
 
   return (

@@ -1,16 +1,12 @@
-import { EVENTS } from '@/data';
+import { EVENTS, Event, EventStatus } from '@/data';
 import { EventCard } from '@/components/EventCard';
 import { Header } from '@/components/Header';
 import { useSchedule } from '@/hooks/use-schedule';
 import { CircleOff, CalendarDays } from 'lucide-react';
 
-// Define the grouping types
-type GroupedByDay = Record<string, typeof EVENTS>;
-type ScheduleGroups = {
-  'must-see': GroupedByDay;
-  'nice': GroupedByDay;
-  'have': GroupedByDay;
-};
+// Define the grouping types - now grouped by day first, then status
+type GroupedByStatus = Record<EventStatus, typeof EVENTS>;
+type DayGroups = Record<string, GroupedByStatus>;
 
 const STATUS_LABELS = {
   'must-see': { label: 'Must See', color: 'bg-neon-yellow shadow-[0_0_8px_#ffff00]', text: 'text-neon-yellow' },
@@ -18,39 +14,41 @@ const STATUS_LABELS = {
   'have': { label: 'Going / Have', color: 'bg-neon-green shadow-[0_0_8px_#00ff00]', text: 'text-neon-green' },
 };
 
+const DAY_ORDER = ['Friday', 'Saturday', 'Sunday'];
+
 const timeToMinutes = (time: string) => {
   const [hours, minutes] = time.split(':').map(Number);
   let totalMinutes = hours * 60 + minutes;
-  
-  // FESTIVAL LOGIC: If the time is between 00:00 and 05:00, 
+
+  // FESTIVAL LOGIC: If the time is between 00:00 and 05:00,
   // treat it as "late night" (add 24 hours) so it appears after 23:00.
   if (hours >= 0 && hours < 6) {
     totalMinutes += 24 * 60;
   }
-  
+
   return totalMinutes;
 };
 
 export default function MySchedule() {
   const { schedule } = useSchedule();
 
-  // 1. Filter and Group in one pass
+  // Group by day first, then by status
   const groupedData = EVENTS.reduce((acc, event) => {
     const status = schedule[event.id];
     if (!status || status === 'none') return acc;
-      
-    const day = event.day; // Assuming event.day is "Friday", "Saturday", etc.
-    
-    if (!acc[status]) acc[status] = {};
-    if (!acc[status][day]) acc[status][day] = [];
-    
-    acc[status][day].push(event);
 
-    // SORTING HAPPENS HERE
-    acc[status][day].sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+    const day = event.day;
+
+    if (!acc[day]) acc[day] = {} as GroupedByStatus;
+    if (!acc[day][status]) acc[day][status] = [];
+
+    acc[day][status].push(event);
+
+    // Sort by time within each status group
+    acc[day][status].sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
     return acc;
-  }, {} as ScheduleGroups);
+  }, {} as DayGroups);
 
   const hasEvents = Object.keys(groupedData).length > 0;
 
@@ -67,37 +65,38 @@ export default function MySchedule() {
         </div>
       ) : (
         <div className="p-4 space-y-12">
-          {(Object.entries(STATUS_LABELS) as [keyof ScheduleGroups, typeof STATUS_LABELS['must-see']][]).map(([status, config]) => {
-            const daysInStatus = groupedData[status];
-            if (!daysInStatus) return null;
+          {DAY_ORDER.filter(day => groupedData[day]).map(day => {
+            const statusesInDay = groupedData[day];
             return (
-              <section key={status} className="space-y-6">
-                {/* Status Header */}
-                <div className="flex items-center gap-2 sticky top-0 bg-background/80 backdrop-blur-md py-2 z-10">
-                  <div className={`w-2 h-2 rounded-full ${config.color}`} />
-                  <h2 className={`text-xl font-display tracking-widest uppercase ${config.text}`}>
-                    {config.label}
+              <section key={day} className="space-y-6">
+                {/* Day Header */}
+                <div className="flex items-center gap-2 sticky top-[72px] bg-background/80 backdrop-blur-md py-2 z-10">
+                  <CalendarDays className="w-5 h-5 text-neon-cyan" />
+                  <h2 className="text-xl font-display tracking-widest uppercase text-white">
+                    {day}
                   </h2>
                 </div>
 
-                {/* Day Groups */}
-                {Object.entries(daysInStatus).sort(([dayA], [dayB]) => {
-                  const order = ['Friday', 'Saturday', 'Sunday'];
-                  return order.indexOf(dayA) - order.indexOf(dayB);
-                }).map(([day, events]) => (
-                  <div key={day} className="space-y-3 pl-2 border-l border-white/5">
-                    <div className="flex items-center gap-2 mb-4">
-                       <CalendarDays className="w-4 h-4 text-muted-foreground" />
-                       <h3 className="text-sm font-mono text-white/60 uppercase tracking-tighter italic">
-                         — {day}
-                       </h3>
+                {/* Status Groups within each day */}
+                {(Object.entries(STATUS_LABELS) as [EventStatus, typeof STATUS_LABELS['must-see']][]).map(([status, config]) => {
+                  const events = statusesInDay[status];
+                  if (!events || events.length === 0) return null;
+
+                  return (
+                    <div key={status} className="space-y-3 pl-2 border-l border-white/5">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className={`w-2 h-2 rounded-full ${config.color}`} />
+                        <h3 className={`text-sm font-mono uppercase tracking-tighter ${config.text}`}>
+                          {config.label}
+                        </h3>
+                      </div>
+
+                      {events.map(event => (
+                        <EventCard key={event.id} event={event} />
+                      ))}
                     </div>
-                    
-                    {events.map(event => (
-                      <EventCard key={event.id} event={event} />
-                    ))}
-                  </div>
-                ))}
+                  );
+                })}
               </section>
             );
           })}
