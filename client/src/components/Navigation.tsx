@@ -18,7 +18,14 @@ export function Navigation() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-t border-white/10 pb-safe safe-bottom">
-      <div className="flex justify-around items-center h-16 overflow-x-auto no-scrollbar">
+      <div
+        className="flex justify-around items-center h-16 overflow-x-auto no-scrollbar"
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-x',
+          overscrollBehavior: 'contain'
+        }}
+      >
         {navItems.map((item) => {
           const isActive = location === item.href;
           const Icon = item.icon;

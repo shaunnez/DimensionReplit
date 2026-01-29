@@ -119,7 +119,7 @@ export default function Timetable({ category, title }: TimetableProps) {
     <div className="min-h-screen pb-24">
       <Header title={title} subtitle={activeDay} />
 
-      <div className="sticky top-[72px] z-30 bg-background/95 backdrop-blur border-b border-white/5 px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar">
+      <div className="sticky top-[72px] z-30 bg-background/95 backdrop-blur border-b border-white/5 px-4 py-3 flex gap-2 overflow-x-auto no-scrollbar">
         {days.map(day => (
           <button
             key={day}
