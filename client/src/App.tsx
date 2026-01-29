@@ -7,6 +7,7 @@ import { Navigation } from "@/components/Navigation";
 import Home from "@/pages/Home";
 import Timetable from "@/pages/Timetable";
 import MySchedule from "@/pages/MySchedule";
+import Reminders from "@/pages/Reminders";
 import { AnimatePresence, motion } from "framer-motion";
 
 function Router() {
@@ -39,6 +40,11 @@ function Router() {
         <Route path="/info">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <Timetable category="info" title="Festival Info" />
+          </motion.div>
+        </Route>
+        <Route path="/reminders">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <Reminders />
           </motion.div>
         </Route>
         <Route path="/schedule">

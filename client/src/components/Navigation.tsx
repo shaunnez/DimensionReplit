@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Home, Music, Tent, Flame, Eye, Clock, Map, Calendar } from 'lucide-react';
+import { Home, Music, Tent, Flame, Eye, Clock, Map, Calendar, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Navigation() {
@@ -12,6 +12,7 @@ export function Navigation() {
     { href: '/workshops', icon: Tent, label: 'Workshops' },
     { href: '/vjs', icon: Eye, label: 'VJs' },
     { href: '/info', icon: Clock, label: 'Info' },
+    { href: '/reminders', icon: Bell, label: 'Reminders' },
     { href: '/schedule', icon: Calendar, label: 'My Plan' },
   ];
 
