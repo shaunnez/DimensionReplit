@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation, Router as WRouter } from "wouter";
+import { Switch, Route, useLocation, Router as WRouter, hashLocation} from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
@@ -65,7 +65,7 @@ function Router() {
 
 function App() {
   return (
-    <WRouter base="/DimensionReplit">
+    <WRouter base="/DimensionReplit" hook={hashLocation}>
     <QueryClientProvider client={queryClient}>
       <div className="bg-background text-foreground min-h-screen font-ui selection:bg-neon-cyan selection:text-black">
         <NotificationBanner />
