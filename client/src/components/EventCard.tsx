@@ -81,9 +81,13 @@ export function EventCard({ event, compact = false }: EventCardProps) {
         <motion.div
           layoutId={`card-${event.id}`}
           className={cn(
-            "relative p-4 mb-3 rounded-xl border border-white/10 backdrop-blur-md transition-all active:scale-[0.98]",
+            "relative p-4 mb-3 rounded-xl border border-white/10 backdrop-blur-md transition-all active:scale-[0.98] cursor-pointer",
             status === 'none' ? "bg-card/40 hover:bg-card/60" : config.bg
           )}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           <div className="flex justify-between items-start">
             <div className="flex-1">
@@ -167,25 +171,25 @@ export function EventCard({ event, compact = false }: EventCardProps) {
             </div>
 
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="min-w-0">
-                  <Label htmlFor="reminder-date" className="text-xs text-muted-foreground">Date</Label>
+              <div className="grid grid-cols-2 gap-4 overflow-hidden">
+                <div className="min-w-0 flex flex-col overflow-hidden">
+                  <Label htmlFor="reminder-date" className="text-xs text-muted-foreground mb-1">Date</Label>
                   <Input
                     id="reminder-date"
                     type="date"
                     value={reminderDate}
                     onChange={(e) => setReminderDate(e.target.value)}
-                    className="mt-1 bg-background/50 border-white/10 w-full"
+                    className="bg-background/50 border-white/10 max-w-full"
                   />
                 </div>
-                <div className="min-w-0">
-                  <Label htmlFor="reminder-time" className="text-xs text-muted-foreground">Time</Label>
+                <div className="min-w-0 flex flex-col overflow-hidden">
+                  <Label htmlFor="reminder-time" className="text-xs text-muted-foreground mb-1">Time</Label>
                   <Input
                     id="reminder-time"
                     type="time"
                     value={reminderTime}
                     onChange={(e) => setReminderTime(e.target.value)}
-                    className="mt-1 bg-background/50 border-white/10 w-full"
+                    className="bg-background/50 border-white/10 max-w-full"
                   />
                 </div>
               </div>
