@@ -94,74 +94,9 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Handle notification clicks
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-
-  const action = event.action;
-
-  // Open the app when notification is clicked
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then((clientList) => {
-        // If a window is already open, focus it
-        for (const client of clientList) {
-          if ('focus' in client) {
-            return client.focus();
-          }
-        }
-        // Otherwise, open a new window to the home page
-        if (clients.openWindow) {
-          return clients.openWindow(BASE_PATH + '#/');
-        }
-      })
-  );
-});
-
-// Handle push notifications (for future use)
-self.addEventListener('push', (event) => {
-  const options = {
-    body: event.data ? event.data.text() : 'Event reminder',
-    icon: BASE_PATH + 'icon-192.png',
-    badge: BASE_PATH + 'icon-192.png',
-    vibrate: [200, 100, 200],
-    tag: 'dimension-reminder',
-    requireInteraction: true
-  };
-
-  event.waitUntil(
-    self.registration.showNotification('Dimension Festival', options)
-  );
-});
-
 // Handle messages from the main thread
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
-  }
-
-  // Handle scheduled notifications
-  if (event.data && event.data.type === 'SCHEDULE_NOTIFICATION') {
-    const { eventName, eventTime, eventId } = event.data;
-    const now = Date.now();
-    const notificationTime = new Date(eventTime).getTime();
-    const delay = notificationTime - now;
-
-    if (delay > 0) {
-      setTimeout(() => {
-        self.registration.showNotification('Event Reminder - Dimension Festival', {
-          body: `${eventName} is starting soon!`,
-          icon: BASE_PATH + 'icon-192.png',
-          badge: BASE_PATH + 'icon-192.png',
-          vibrate: [200, 100, 200, 100, 200],
-          tag: eventId,
-          requireInteraction: true,
-          actions: [
-            { action: 'view', title: 'View Event' },
-            { action: 'dismiss', title: 'Dismiss' }
-          ]
-        });
-      }, delay);
-    }
   }
 });

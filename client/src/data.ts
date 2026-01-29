@@ -12,6 +12,9 @@ export interface Event {
   description?: string;
 }
 
+// Festival start date (Friday)
+export const FESTIVAL_START_DATE = new Date(2025, 0, 31); // January 31, 2025 (Friday)
+
 // Raw data from festival
 const FESTIVAL_DATA = {
   "performers": [
