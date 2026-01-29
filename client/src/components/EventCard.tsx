@@ -60,8 +60,7 @@ export function EventCard({ event, compact = false }: EventCardProps) {
 
   const handleToggle = (newStatus: EventStatus) => {
     toggleStatus(event.id, newStatus);
-    // Close drawer after a short delay to show the selection feedback
-    setTimeout(() => setOpen(false), 300);
+    // Don't close drawer - let user continue interacting with the modal
   };
 
   const handleSetReminder = async () => {
@@ -118,8 +117,8 @@ export function EventCard({ event, compact = false }: EventCardProps) {
         </motion.div>
       </DrawerTrigger>
 
-      <DrawerContent className="bg-card border-t border-white/10">
-        <div className="mx-auto w-full max-w-sm">
+      <DrawerContent className="bg-card border-t border-white/10 z-50">
+        <div className="mx-auto w-full max-w-sm" style={{ isolation: 'isolate' }}>
           <DrawerHeader>
             <DrawerTitle className="text-2xl font-display text-white">{event.name}</DrawerTitle>
             <DrawerDescription className="font-ui text-lg text-neon-magenta">{timeDisplay} • {event.location}</DrawerDescription>
@@ -161,32 +160,32 @@ export function EventCard({ event, compact = false }: EventCardProps) {
           </div>
 
           {/* Reminder Section */}
-          <div className="p-4 border-t border-white/10">
+          <div className="p-4 mt-4 border-t border-white/10">
             <div className="flex items-center gap-2 mb-3">
               <Bell className="w-4 h-4 text-neon-yellow" />
               <h3 className="font-display text-sm uppercase tracking-wider text-white">Set Reminder</h3>
             </div>
 
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="min-w-0">
                   <Label htmlFor="reminder-date" className="text-xs text-muted-foreground">Date</Label>
                   <Input
                     id="reminder-date"
                     type="date"
                     value={reminderDate}
                     onChange={(e) => setReminderDate(e.target.value)}
-                    className="mt-1 bg-background/50 border-white/10"
+                    className="mt-1 bg-background/50 border-white/10 w-full"
                   />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <Label htmlFor="reminder-time" className="text-xs text-muted-foreground">Time</Label>
                   <Input
                     id="reminder-time"
                     type="time"
                     value={reminderTime}
                     onChange={(e) => setReminderTime(e.target.value)}
-                    className="mt-1 bg-background/50 border-white/10"
+                    className="mt-1 bg-background/50 border-white/10 w-full"
                   />
                 </div>
               </div>
