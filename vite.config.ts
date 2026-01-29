@@ -8,7 +8,7 @@ import { metaImagesPlugin } from "./vite-plugin-meta-images";
 // Base path for GitHub Pages deployment
 const BASE_PATH = '/DimensionReplit/';
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(async ({ mode }) => ({
   // Use base path only in production for GitHub Pages
   base: mode === 'production' ? BASE_PATH : '/',
   plugins: [
