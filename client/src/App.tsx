@@ -16,15 +16,30 @@ function Router() {
     <AnimatePresence mode="wait">
       <Switch location={location} key={location}>
         <Route path="/" component={Home} />
+        <Route path="/music">
+           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+             <Timetable category="music" title="Music" />
+           </motion.div>
+        </Route>
+        <Route path="/performers">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <Timetable category="performer" title="Performers" />
+          </motion.div>
+        </Route>
         <Route path="/workshops">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <Timetable category="workshop" title="Workshops" />
           </motion.div>
         </Route>
-        <Route path="/music">
-           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-             <Timetable category="music" title="Music & Arts" />
-           </motion.div>
+        <Route path="/vjs">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <Timetable category="vj" title="VJs" />
+          </motion.div>
+        </Route>
+        <Route path="/info">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <Timetable category="info" title="Festival Info" />
+          </motion.div>
         </Route>
         <Route path="/schedule">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
