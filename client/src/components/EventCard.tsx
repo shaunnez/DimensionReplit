@@ -15,11 +15,13 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { FriendPreferencePills } from './FriendPreferencePills';
 
 interface EventCardProps {
   event: Event;
   compact?: boolean;
   showStatusBadge?: boolean;
+  showFriendPills?: boolean;
 }
 
 const statusConfig: Record<EventStatus, { icon: any, color: string, label: string, bg: string }> = {
@@ -29,7 +31,7 @@ const statusConfig: Record<EventStatus, { icon: any, color: string, label: strin
   'have': { icon: CheckCircle, color: 'text-neon-green', label: 'Going / Have', bg: 'bg-neon-green/10 border-neon-green/50' },
 };
 
-export function EventCard({ event, compact = false, showStatusBadge = false }: EventCardProps) {
+export function EventCard({ event, compact = false, showStatusBadge = false, showFriendPills = false }: EventCardProps) {
   const { getStatus, toggleStatus } = useSchedule();
   const status = getStatus(event.id);
   const config = statusConfig[status];
@@ -104,6 +106,7 @@ export function EventCard({ event, compact = false, showStatusBadge = false }: E
                   {config.label}
                 </div>
               )}
+              {showFriendPills && <FriendPreferencePills eventId={event.id} />}
             </div>
 
             <div className={cn(

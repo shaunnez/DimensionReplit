@@ -75,7 +75,7 @@ export default function MySchedule() {
                 {/* Events sorted by time */}
                 <div className="space-y-3">
                   {eventsInDay.map(event => (
-                    <EventCard key={event.id} event={event} showStatusBadge />
+                    <EventCard key={event.id} event={event} showStatusBadge showFriendPills />
                   ))}
                 </div>
               </section>
