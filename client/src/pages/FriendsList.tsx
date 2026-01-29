@@ -3,7 +3,7 @@ import { EVENTS, Event, EventStatus } from '@/data';
 import { Header } from '@/components/Header';
 import { useSchedule } from '@/hooks/use-schedule';
 import { useFriendsLists } from '@/hooks/use-friends-lists';
-import { Users, Download, Upload, Trash2, CalendarDays, ChevronDown, ChevronUp, Star, ThumbsUp, CheckCircle, QrCode, Camera, X } from 'lucide-react';
+import { Users, Download, Upload, Trash2, CalendarDays, ChevronDown, ChevronUp, Star, ThumbsUp, CheckCircle, QrCode, Camera, X, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -60,6 +60,7 @@ export default function FriendsList() {
   const [scanError, setScanError] = useState<string | null>(null);
   const [scanSuccess, setScanSuccess] = useState<string | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const qrImageInputRef = useRef<HTMLInputElement>(null);
 
   // Generate QR code data - only include events that are not 'none'
   const generateQrData = (name: string) => {
@@ -142,6 +143,40 @@ export default function FriendsList() {
       }
     };
   }, []);
+
+  // Scan QR code from image file
+  const handleScanFromImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setScanError(null);
+    setScanSuccess(null);
+
+    try {
+      const html5Qrcode = new Html5Qrcode('qr-image-reader');
+      const decodedText = await html5Qrcode.scanFile(file, true);
+
+      try {
+        const data = JSON.parse(decodedText) as FriendSchedule;
+        if (data.name && data.schedule) {
+          addFriendsList(data);
+          setScanSuccess(`Imported ${data.name}'s plan!`);
+        } else {
+          setScanError('Invalid QR code format');
+        }
+      } catch {
+        setScanError('Could not read QR code data');
+      }
+    } catch (err) {
+      console.error('Image scan error:', err);
+      setScanError('Could not find a valid QR code in the image');
+    }
+
+    // Reset input so the same file can be selected again
+    if (qrImageInputRef.current) {
+      qrImageInputRef.current.value = '';
+    }
+  };
 
   const handleExport = () => {
     if (!exportName.trim()) return;
@@ -362,14 +397,34 @@ export default function FriendsList() {
             Scan a friend's QR code to import their plan instantly.
           </p>
 
+          {/* Hidden elements for QR scanning */}
+          <input
+            type="file"
+            ref={qrImageInputRef}
+            accept="image/*"
+            onChange={handleScanFromImage}
+            className="hidden"
+          />
+          <div id="qr-image-reader" className="hidden" />
+
           {!isScanning ? (
-            <Button
-              onClick={startScanner}
-              className="w-full bg-neon-green/20 hover:bg-neon-green/30 text-neon-green border border-neon-green/30"
-            >
-              <Camera className="w-4 h-4 mr-2" />
-              Start Scanner
-            </Button>
+            <div className="space-y-3">
+              <Button
+                onClick={startScanner}
+                className="w-full bg-neon-green/20 hover:bg-neon-green/30 text-neon-green border border-neon-green/30"
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                Use Camera
+              </Button>
+              <Button
+                onClick={() => qrImageInputRef.current?.click()}
+                variant="outline"
+                className="w-full border-neon-green/30 text-neon-green hover:bg-neon-green/10"
+              >
+                <ImageIcon className="w-4 h-4 mr-2" />
+                Scan from Screenshot
+              </Button>
+            </div>
           ) : (
             <div className="space-y-4">
               <div
