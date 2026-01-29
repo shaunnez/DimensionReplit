@@ -20,7 +20,22 @@ export function useFriendsLists() {
   }, [friendsLists]);
 
   const addFriendsList = (friend: FriendSchedule) => {
-    setFriendsLists(prev => [...prev, friend]);
+    setFriendsLists(prev => {
+      // Check if a friend with the same name already exists (case-insensitive)
+      const existingIndex = prev.findIndex(
+        f => f.name.toLowerCase() === friend.name.toLowerCase()
+      );
+
+      if (existingIndex !== -1) {
+        // Override existing friend's schedule
+        const updated = [...prev];
+        updated[existingIndex] = friend;
+        return updated;
+      }
+
+      // Add new friend
+      return [...prev, friend];
+    });
   };
 
   const removeFriendsList = (index: number) => {
