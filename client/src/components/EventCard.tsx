@@ -84,10 +84,6 @@ export function EventCard({ event, compact = false }: EventCardProps) {
             "relative p-4 mb-3 rounded-xl border border-white/10 backdrop-blur-md transition-all active:scale-[0.98] cursor-pointer",
             status === 'none' ? "bg-card/40 hover:bg-card/60" : config.bg
           )}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
         >
           <div className="flex justify-between items-start">
             <div className="flex-1">
