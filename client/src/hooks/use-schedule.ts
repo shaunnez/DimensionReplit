@@ -14,10 +14,21 @@ export function useSchedule() {
   }, [schedule]);
 
   const toggleStatus = (eventId: string, nextStatus: EventStatus) => {
-    setSchedule(prev => ({
-      ...prev,
-      [eventId]: nextStatus
-    }));
+    console.log(eventId, nextStatus)
+    const oldSchedule = localStorage.getItem('dimension-schedule');
+    const jsonSchedule = oldSchedule ? JSON.parse(oldSchedule) : {};
+    const theItem = jsonSchedule[eventId];
+    if (theItem && theItem === nextStatus) {
+      delete jsonSchedule[eventId];
+    } else {
+      jsonSchedule[eventId] = nextStatus;
+    }
+
+    setSchedule({...jsonSchedule})
+    // setSchedule(prev => ({
+    //   ...prev,
+    //   [eventId]: nextStatus
+    // }));
   };
 
   const getStatus = (eventId: string): EventStatus => {
