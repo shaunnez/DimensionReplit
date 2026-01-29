@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 interface EventCardProps {
   event: Event;
   compact?: boolean;
+  showStatusBadge?: boolean;
 }
 
 const statusConfig: Record<EventStatus, { icon: any, color: string, label: string, bg: string }> = {
@@ -28,7 +29,7 @@ const statusConfig: Record<EventStatus, { icon: any, color: string, label: strin
   'have': { icon: CheckCircle, color: 'text-neon-green', label: 'Going / Have', bg: 'bg-neon-green/10 border-neon-green/50' },
 };
 
-export function EventCard({ event, compact = false }: EventCardProps) {
+export function EventCard({ event, compact = false, showStatusBadge = false }: EventCardProps) {
   const { getStatus, toggleStatus } = useSchedule();
   const status = getStatus(event.id);
   const config = statusConfig[status];
@@ -52,7 +53,10 @@ export function EventCard({ event, compact = false }: EventCardProps) {
 
   const handleToggle = (newStatus: EventStatus) => {
     toggleStatus(event.id, newStatus);
-    // Don't close drawer - let user continue interacting with the modal
+    // Close drawer when clearing the status so the list updates properly
+    if (newStatus === 'none') {
+      setOpen(false);
+    }
   };
 
   const handleGoogleCalendar = () => {
@@ -89,6 +93,17 @@ export function EventCard({ event, compact = false }: EventCardProps) {
               <p className="text-sm text-muted-foreground font-ui uppercase tracking-widest">
                 {event.location}
               </p>
+              {showStatusBadge && status !== 'none' && (
+                <div className={cn(
+                  "inline-flex items-center gap-1.5 mt-2 px-2 py-1 rounded-full text-xs font-mono uppercase tracking-wider",
+                  status === 'must-see' && "bg-neon-yellow/20 text-neon-yellow",
+                  status === 'nice' && "bg-neon-cyan/20 text-neon-cyan",
+                  status === 'have' && "bg-neon-green/20 text-neon-green"
+                )}>
+                  <config.icon className="w-3 h-3" />
+                  {config.label}
+                </div>
+              )}
             </div>
 
             <div className={cn(

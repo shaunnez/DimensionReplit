@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Home, Music, Tent, Flame, Eye, Clock, Map, Calendar } from 'lucide-react';
+import { Home, Music, Tent, Flame, Eye, Clock, Map, Calendar, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Navigation() {
@@ -8,6 +8,7 @@ export function Navigation() {
   const navItems = [
     { href: '/', icon: Home, label: 'Home' },
     { href: '/schedule', icon: Calendar, label: 'My Plan' },
+    { href: '/friends', icon: Users, label: 'Friends' },
     { href: '/music', icon: Music, label: 'Music' },
     { href: '/performers', icon: Flame, label: 'Performers' },
     { href: '/workshops', icon: Tent, label: 'Workshops' },

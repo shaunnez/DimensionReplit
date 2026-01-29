@@ -9,6 +9,7 @@ import { IOSInstallPrompt } from "@/components/IOSInstallPrompt";
 import Home from "@/pages/Home";
 import Timetable from "@/pages/Timetable";
 import MySchedule from "@/pages/MySchedule";
+import FriendsList from "@/pages/FriendsList";
 import { AnimatePresence, motion } from "framer-motion";
 
 function Router() {
@@ -50,6 +51,11 @@ function Router() {
         <Route path="/schedule">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <MySchedule />
+          </motion.div>
+        </Route>
+        <Route path="/friends">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <FriendsList />
           </motion.div>
         </Route>
         <Route component={NotFound} />
