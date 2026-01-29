@@ -28,11 +28,21 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   return Notification.permission;
 }
 
+// Get base URL for assets
+const getBaseUrl = () => {
+  // Use Vite's base URL if available, otherwise default to /
+  if (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) {
+    return import.meta.env.BASE_URL;
+  }
+  return '/';
+};
+
 // Schedule a notification for an event
 function scheduleNotification(eventId: string, eventName: string, reminderDateTime: string) {
   const now = new Date();
   const reminderTime = new Date(reminderDateTime);
   const timeUntilReminder = reminderTime.getTime() - now.getTime();
+  const baseUrl = getBaseUrl();
 
   // Only schedule if the reminder is in the future
   if (timeUntilReminder > 0) {
@@ -51,8 +61,8 @@ function scheduleNotification(eventId: string, eventName: string, reminderDateTi
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('Event Reminder - Dimension Festival', {
           body: `${eventName} is starting soon!`,
-          icon: '/icon-192.png',
-          badge: '/icon-192.png',
+          icon: `${baseUrl}icon-192.png`,
+          badge: `${baseUrl}icon-192.png`,
           tag: eventId,
           requireInteraction: true,
           vibrate: [200, 100, 200, 100, 200]

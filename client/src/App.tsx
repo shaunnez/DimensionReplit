@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import { Navigation } from "@/components/Navigation";
 import { NotificationBanner } from "@/components/NotificationBanner";
+import { IOSInstallPrompt } from "@/components/IOSInstallPrompt";
 import Home from "@/pages/Home";
 import Timetable from "@/pages/Timetable";
 import MySchedule from "@/pages/MySchedule";
@@ -66,12 +67,13 @@ function Router() {
 
 function App() {
   return (
-    <WRouter base="/DimensionReplit" hook={useHashLocation}>
+    <WRouter hook={useHashLocation}>
     <QueryClientProvider client={queryClient}>
       <div className="bg-background text-foreground min-h-screen font-ui selection:bg-neon-cyan selection:text-black">
         <NotificationBanner />
         <Router />
         <Navigation />
+        <IOSInstallPrompt />
         <Toaster />
       </div>
     </QueryClientProvider>

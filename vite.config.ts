@@ -5,9 +5,12 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 import { metaImagesPlugin } from "./vite-plugin-meta-images";
 
-export default defineConfig({
-  // GitHub Pages base path - set to repo name or empty string for custom domain
-  base: '/DimensionReplit/',
+// Base path for GitHub Pages deployment
+const BASE_PATH = '/DimensionReplit/';
+
+export default defineConfig(({ mode }) => ({
+  // Use base path only in production for GitHub Pages
+  base: mode === 'production' ? BASE_PATH : '/',
   plugins: [
     react(),
     runtimeErrorOverlay(),
@@ -56,4 +59,4 @@ export default defineConfig({
       deny: ["**/.*"],
     },
   },
-});
+}));
