@@ -64,9 +64,9 @@ export function EventCard({ event, compact = false }: EventCardProps) {
     setTimeout(() => setOpen(false), 300);
   };
 
-  const handleSetReminder = () => {
+  const handleSetReminder = async () => {
     if (reminderDate && reminderTime) {
-      setReminder(event.id, reminderDate, reminderTime);
+      await setReminder(event.id, reminderDate, reminderTime, event.name);
     }
   };
 
