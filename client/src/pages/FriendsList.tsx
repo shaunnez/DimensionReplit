@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { EVENTS, Event, EventStatus } from '@/data';
 import { Header } from '@/components/Header';
 import { useSchedule } from '@/hooks/use-schedule';
 import { useFriendsLists } from '@/hooks/use-friends-lists';
-import { Users, Download, Upload, Trash2, CalendarDays, ChevronDown, ChevronUp, Star, ThumbsUp, CheckCircle, QrCode, Camera, X, ImageIcon } from 'lucide-react';
+import { Users, Trash2, CalendarDays, ChevronDown, ChevronUp, Star, ThumbsUp, CheckCircle, QrCode, X, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -48,18 +48,13 @@ interface FriendSchedule {
 export default function FriendsList() {
   const { schedule } = useSchedule();
   const { friendsLists, addFriendsList, removeFriendsList } = useFriendsLists();
-  const [exportName, setExportName] = useState('');
-  const [showExportSuccess, setShowExportSuccess] = useState(false);
   const [expandedFriend, setExpandedFriend] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // QR Code states
   const [showQrCode, setShowQrCode] = useState(false);
   const [qrName, setQrName] = useState('');
-  const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [scanSuccess, setScanSuccess] = useState<string | null>(null);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
   const qrImageInputRef = useRef<HTMLInputElement>(null);
 
   // Generate QR code data - only include events that are not 'none'
@@ -80,69 +75,6 @@ export default function FriendsList() {
     return JSON.stringify(data);
   };
 
-  // Start QR scanner
-  const startScanner = async () => {
-    setScanError(null);
-    setScanSuccess(null);
-    setIsScanning(true);
-
-    try {
-      const html5Qrcode = new Html5Qrcode('qr-reader');
-      scannerRef.current = html5Qrcode;
-
-      await html5Qrcode.start(
-        { facingMode: 'environment' },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
-        (decodedText) => {
-          // Successfully scanned
-          try {
-            const data = JSON.parse(decodedText) as FriendSchedule;
-            if (data.name && data.schedule) {
-              addFriendsList(data);
-              setScanSuccess(`Imported ${data.name}'s plan!`);
-              stopScanner();
-            } else {
-              setScanError('Invalid QR code format');
-            }
-          } catch {
-            setScanError('Could not read QR code data');
-          }
-        },
-        () => {
-          // Ignore scan failures (no QR code in frame)
-        }
-      );
-    } catch (err) {
-      console.error('Scanner error:', err);
-      setScanError('Could not access camera. Please grant camera permissions.');
-      setIsScanning(false);
-    }
-  };
-
-  // Stop QR scanner
-  const stopScanner = async () => {
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.stop();
-        scannerRef.current = null;
-      } catch (err) {
-        console.error('Error stopping scanner:', err);
-      }
-    }
-    setIsScanning(false);
-  };
-
-  // Cleanup scanner on unmount
-  useEffect(() => {
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(console.error);
-      }
-    };
-  }, []);
 
   // Scan QR code from image file
   const handleScanFromImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,52 +110,6 @@ export default function FriendsList() {
     }
   };
 
-  const handleExport = () => {
-    if (!exportName.trim()) return;
-
-    const exportData: FriendSchedule = {
-      name: exportName.trim(),
-      schedule: schedule,
-      exportedAt: new Date().toISOString(),
-    };
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${exportName.trim().toLowerCase().replace(/\s+/g, '-')}-dimension-plan.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    setShowExportSuccess(true);
-    setTimeout(() => setShowExportSuccess(false), 3000);
-    setExportName('');
-  };
-
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target?.result as string) as FriendSchedule;
-        if (data.name && data.schedule) {
-          addFriendsList(data);
-        }
-      } catch (error) {
-        console.error('Failed to import friend list:', error);
-      }
-    };
-    reader.readAsText(file);
-
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
 
   const getEventsForFriend = (friendSchedule: Record<string, EventStatus>) => {
     const grouped: Record<string, Array<Event & { status: EventStatus }>> = {};
@@ -252,75 +138,6 @@ export default function FriendsList() {
       <Header title="Friends List" subtitle="Share & Compare" />
 
       <div className="p-4 space-y-6">
-        {/* Export Section */}
-        <section className="bg-card/40 rounded-xl border border-white/10 p-4 space-y-4">
-          <h2 className="text-lg font-display uppercase tracking-wider text-white flex items-center gap-2">
-            <Download className="w-5 h-5 text-neon-cyan" />
-            Export Your Plan
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Share your schedule with friends by exporting it as a file.
-          </p>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Your name"
-              value={exportName}
-              onChange={(e) => setExportName(e.target.value)}
-              className="flex-1 bg-background/50 border-white/10"
-            />
-            <Button
-              onClick={handleExport}
-              disabled={!exportName.trim() || !hasEvents}
-              className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-neon-cyan border border-neon-cyan/30"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-          </div>
-          {!hasEvents && (
-            <p className="text-xs text-muted-foreground">
-              Add events to your plan first to export.
-            </p>
-          )}
-          <AnimatePresence>
-            {showExportSuccess && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="text-sm text-neon-green"
-              >
-                Plan exported successfully!
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </section>
-
-        {/* Import Section */}
-        <section className="bg-card/40 rounded-xl border border-white/10 p-4 space-y-4">
-          <h2 className="text-lg font-display uppercase tracking-wider text-white flex items-center gap-2">
-            <Upload className="w-5 h-5 text-neon-magenta" />
-            Import Friend's Plan
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Import a friend's schedule to see what they're planning.
-          </p>
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept=".json"
-            onChange={handleImport}
-            className="hidden"
-          />
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full bg-neon-magenta/20 hover:bg-neon-magenta/30 text-neon-magenta border border-neon-magenta/30"
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            Choose File to Import
-          </Button>
-        </section>
-
         {/* QR Code Share Section */}
         <section className="bg-card/40 rounded-xl border border-white/10 p-4 space-y-4">
           <h2 className="text-lg font-display uppercase tracking-wider text-white flex items-center gap-2">
@@ -390,11 +207,11 @@ export default function FriendsList() {
         {/* QR Code Scanner Section */}
         <section className="bg-card/40 rounded-xl border border-white/10 p-4 space-y-4">
           <h2 className="text-lg font-display uppercase tracking-wider text-white flex items-center gap-2">
-            <Camera className="w-5 h-5 text-neon-green" />
+            <QrCode className="w-5 h-5 text-neon-green" />
             Scan Friend's QR Code
           </h2>
           <p className="text-sm text-muted-foreground">
-            Scan a friend's QR code to import their plan instantly.
+            Scan a friend's QR code from a screenshot to import their plan instantly.
           </p>
 
           {/* Hidden elements for QR scanning */}
@@ -407,41 +224,13 @@ export default function FriendsList() {
           />
           <div id="qr-image-reader" className="hidden" />
 
-          {!isScanning ? (
-            <div className="space-y-3">
-              <Button
-                onClick={startScanner}
-                className="w-full bg-neon-green/20 hover:bg-neon-green/30 text-neon-green border border-neon-green/30"
-              >
-                <Camera className="w-4 h-4 mr-2" />
-                Use Camera
-              </Button>
-              <Button
-                onClick={() => qrImageInputRef.current?.click()}
-                variant="outline"
-                className="w-full border-neon-green/30 text-neon-green hover:bg-neon-green/10"
-              >
-                <ImageIcon className="w-4 h-4 mr-2" />
-                Scan from Screenshot
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div
-                id="qr-reader"
-                className="w-full overflow-hidden rounded-lg"
-                style={{ minHeight: '300px' }}
-              />
-              <Button
-                onClick={stopScanner}
-                variant="outline"
-                className="w-full border-white/10"
-              >
-                <X className="w-4 h-4 mr-2" />
-                Stop Scanner
-              </Button>
-            </div>
-          )}
+          <Button
+            onClick={() => qrImageInputRef.current?.click()}
+            className="w-full bg-neon-green/20 hover:bg-neon-green/30 text-neon-green border border-neon-green/30"
+          >
+            <ImageIcon className="w-4 h-4 mr-2" />
+            Scan from Screenshot
+          </Button>
 
           <AnimatePresence>
             {scanError && (
