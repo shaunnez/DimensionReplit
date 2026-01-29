@@ -81,7 +81,7 @@ export default function Timetable({ category, title }: TimetableProps) {
             </h2>
             <div className="rounded-xl border border-white/10 bg-card/40 backdrop-blur-md overflow-hidden">
               <img
-                src="/map.PNG"
+                src={`${import.meta.env.BASE_URL}map.PNG`}
                 alt="Dimension Festival Site Map"
                 className="w-full h-auto"
                 style={{

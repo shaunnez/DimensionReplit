@@ -1,8 +1,13 @@
-const CACHE_NAME = 'dimension-festival-v1';
+const CACHE_NAME = 'dimension-festival-v2';
+
+// Use self.location.pathname to get the base path dynamically
+const BASE_PATH = self.location.pathname.replace(/sw\.js$/, '');
+
+// URLs to cache - using relative paths from the service worker location
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json'
+  BASE_PATH,
+  BASE_PATH + 'index.html',
+  BASE_PATH + 'manifest.json'
 ];
 
 // Install service worker and cache assets
@@ -33,12 +38,35 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch strategy: Cache first, then network
+// Fetch strategy: Network first, then cache fallback for navigation
+// Cache first for assets
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  // For navigation requests (HTML), use network-first strategy
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Clone and cache the response
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          // If offline, serve cached index.html
+          return caches.match(BASE_PATH + 'index.html');
+        })
+    );
+    return;
+  }
+
+  // For other requests, use cache-first strategy
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Cache hit - return response
         if (response) {
           return response;
         }
@@ -59,8 +87,8 @@ self.addEventListener('fetch', (event) => {
 
           return response;
         }).catch(() => {
-          // If both cache and network fail, return offline page
-          return caches.match('/index.html');
+          // Return offline fallback for certain resource types
+          return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
         });
       })
   );
@@ -69,6 +97,8 @@ self.addEventListener('fetch', (event) => {
 // Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+
+  const action = event.action;
 
   // Open the app when notification is clicked
   event.waitUntil(
@@ -80,9 +110,9 @@ self.addEventListener('notificationclick', (event) => {
             return client.focus();
           }
         }
-        // Otherwise, open a new window
+        // Otherwise, open a new window to the home page
         if (clients.openWindow) {
-          return clients.openWindow('/');
+          return clients.openWindow(BASE_PATH + '#/');
         }
       })
   );
@@ -92,8 +122,8 @@ self.addEventListener('notificationclick', (event) => {
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data ? event.data.text() : 'Event reminder',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: BASE_PATH + 'icon-192.png',
+    badge: BASE_PATH + 'icon-192.png',
     vibrate: [200, 100, 200],
     tag: 'dimension-reminder',
     requireInteraction: true
@@ -121,8 +151,8 @@ self.addEventListener('message', (event) => {
       setTimeout(() => {
         self.registration.showNotification('Event Reminder - Dimension Festival', {
           body: `${eventName} is starting soon!`,
-          icon: '/icon-192.png',
-          badge: '/icon-192.png',
+          icon: BASE_PATH + 'icon-192.png',
+          badge: BASE_PATH + 'icon-192.png',
           vibrate: [200, 100, 200, 100, 200],
           tag: eventId,
           requireInteraction: true,
