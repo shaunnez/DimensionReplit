@@ -1,13 +1,15 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { EVENTS, Event, EventStatus } from '@/data';
 import { Header } from '@/components/Header';
 import { useSchedule } from '@/hooks/use-schedule';
 import { useFriendsLists } from '@/hooks/use-friends-lists';
-import { Users, Download, Upload, Trash2, CalendarDays, ChevronDown, ChevronUp, Star, ThumbsUp, CheckCircle } from 'lucide-react';
+import { Users, Download, Upload, Trash2, CalendarDays, ChevronDown, ChevronUp, Star, ThumbsUp, CheckCircle, QrCode, Camera, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { QRCodeSVG } from 'qrcode.react';
+import { Html5Qrcode } from 'html5-qrcode';
 
 const STATUS_CONFIG: Record<EventStatus, { icon: any, color: string, label: string }> = {
   'none': { icon: null, color: '', label: '' },
@@ -50,6 +52,96 @@ export default function FriendsList() {
   const [showExportSuccess, setShowExportSuccess] = useState(false);
   const [expandedFriend, setExpandedFriend] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // QR Code states
+  const [showQrCode, setShowQrCode] = useState(false);
+  const [qrName, setQrName] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [scanSuccess, setScanSuccess] = useState<string | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+
+  // Generate QR code data - only include events that are not 'none'
+  const generateQrData = (name: string) => {
+    const filteredSchedule: Record<string, EventStatus> = {};
+    Object.entries(schedule).forEach(([eventId, status]) => {
+      if (status && status !== 'none') {
+        filteredSchedule[eventId] = status;
+      }
+    });
+
+    const data: FriendSchedule = {
+      name: name.trim(),
+      schedule: filteredSchedule,
+      exportedAt: new Date().toISOString(),
+    };
+
+    return JSON.stringify(data);
+  };
+
+  // Start QR scanner
+  const startScanner = async () => {
+    setScanError(null);
+    setScanSuccess(null);
+    setIsScanning(true);
+
+    try {
+      const html5Qrcode = new Html5Qrcode('qr-reader');
+      scannerRef.current = html5Qrcode;
+
+      await html5Qrcode.start(
+        { facingMode: 'environment' },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        },
+        (decodedText) => {
+          // Successfully scanned
+          try {
+            const data = JSON.parse(decodedText) as FriendSchedule;
+            if (data.name && data.schedule) {
+              addFriendsList(data);
+              setScanSuccess(`Imported ${data.name}'s plan!`);
+              stopScanner();
+            } else {
+              setScanError('Invalid QR code format');
+            }
+          } catch {
+            setScanError('Could not read QR code data');
+          }
+        },
+        () => {
+          // Ignore scan failures (no QR code in frame)
+        }
+      );
+    } catch (err) {
+      console.error('Scanner error:', err);
+      setScanError('Could not access camera. Please grant camera permissions.');
+      setIsScanning(false);
+    }
+  };
+
+  // Stop QR scanner
+  const stopScanner = async () => {
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop();
+        scannerRef.current = null;
+      } catch (err) {
+        console.error('Error stopping scanner:', err);
+      }
+    }
+    setIsScanning(false);
+  };
+
+  // Cleanup scanner on unmount
+  useEffect(() => {
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.stop().catch(console.error);
+      }
+    };
+  }, []);
 
   const handleExport = () => {
     if (!exportName.trim()) return;
@@ -192,6 +284,132 @@ export default function FriendsList() {
             <Upload className="w-4 h-4 mr-2" />
             Choose File to Import
           </Button>
+        </section>
+
+        {/* QR Code Share Section */}
+        <section className="bg-card/40 rounded-xl border border-white/10 p-4 space-y-4">
+          <h2 className="text-lg font-display uppercase tracking-wider text-white flex items-center gap-2">
+            <QrCode className="w-5 h-5 text-neon-yellow" />
+            QR Code Share
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Share your plan instantly by showing your QR code to friends.
+          </p>
+
+          {!showQrCode ? (
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Your name"
+                  value={qrName}
+                  onChange={(e) => setQrName(e.target.value)}
+                  className="flex-1 bg-background/50 border-white/10"
+                />
+                <Button
+                  onClick={() => setShowQrCode(true)}
+                  disabled={!qrName.trim() || !hasEvents}
+                  className="bg-neon-yellow/20 hover:bg-neon-yellow/30 text-neon-yellow border border-neon-yellow/30"
+                >
+                  <QrCode className="w-4 h-4 mr-2" />
+                  Generate
+                </Button>
+              </div>
+              {!hasEvents && (
+                <p className="text-xs text-muted-foreground">
+                  Add events to your plan first to share.
+                </p>
+              )}
+            </div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center space-y-4"
+            >
+              <div className="bg-white p-4 rounded-xl">
+                <QRCodeSVG
+                  value={generateQrData(qrName)}
+                  size={200}
+                  level="M"
+                  includeMargin={false}
+                />
+              </div>
+              <p className="text-sm text-center text-muted-foreground">
+                <span className="text-neon-yellow font-display">{qrName}</span>'s Plan
+              </p>
+              <Button
+                onClick={() => {
+                  setShowQrCode(false);
+                  setQrName('');
+                }}
+                variant="outline"
+                className="border-white/10"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Close
+              </Button>
+            </motion.div>
+          )}
+        </section>
+
+        {/* QR Code Scanner Section */}
+        <section className="bg-card/40 rounded-xl border border-white/10 p-4 space-y-4">
+          <h2 className="text-lg font-display uppercase tracking-wider text-white flex items-center gap-2">
+            <Camera className="w-5 h-5 text-neon-green" />
+            Scan Friend's QR Code
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Scan a friend's QR code to import their plan instantly.
+          </p>
+
+          {!isScanning ? (
+            <Button
+              onClick={startScanner}
+              className="w-full bg-neon-green/20 hover:bg-neon-green/30 text-neon-green border border-neon-green/30"
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              Start Scanner
+            </Button>
+          ) : (
+            <div className="space-y-4">
+              <div
+                id="qr-reader"
+                className="w-full overflow-hidden rounded-lg"
+                style={{ minHeight: '300px' }}
+              />
+              <Button
+                onClick={stopScanner}
+                variant="outline"
+                className="w-full border-white/10"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Stop Scanner
+              </Button>
+            </div>
+          )}
+
+          <AnimatePresence>
+            {scanError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="text-sm text-red-400 bg-red-500/10 p-3 rounded-lg"
+              >
+                {scanError}
+              </motion.div>
+            )}
+            {scanSuccess && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="text-sm text-neon-green bg-neon-green/10 p-3 rounded-lg"
+              >
+                {scanSuccess}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </section>
 
         {/* Friends Lists */}
