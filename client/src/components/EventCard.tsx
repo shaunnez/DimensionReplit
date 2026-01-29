@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Event, EventStatus } from '../data';
 import { useSchedule } from '@/hooks/use-schedule';
-import { Star, ThumbsUp, CheckCircle, Circle } from 'lucide-react';
+import { useReminders } from '@/hooks/use-reminders';
+import { Star, ThumbsUp, CheckCircle, Circle, Bell, BellOff, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import {
@@ -15,6 +16,8 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface EventCardProps {
   event: Event;
@@ -30,9 +33,14 @@ const statusConfig: Record<EventStatus, { icon: any, color: string, label: strin
 
 export function EventCard({ event, compact = false }: EventCardProps) {
   const { getStatus, toggleStatus } = useSchedule();
+  const { getReminder, setReminder, clearReminder, hasReminder } = useReminders();
   const status = getStatus(event.id);
   const config = statusConfig[status];
   const [open, setOpen] = useState(false);
+
+  const reminder = getReminder(event.id);
+  const [reminderDate, setReminderDate] = useState(reminder?.reminderDate || '');
+  const [reminderTime, setReminderTime] = useState(reminder?.reminderTime || '');
 
   // Helper to format time display
   const formatTime = (time: string) => {
@@ -56,6 +64,18 @@ export function EventCard({ event, compact = false }: EventCardProps) {
     setTimeout(() => setOpen(false), 300);
   };
 
+  const handleSetReminder = () => {
+    if (reminderDate && reminderTime) {
+      setReminder(event.id, reminderDate, reminderTime);
+    }
+  };
+
+  const handleClearReminder = () => {
+    clearReminder(event.id);
+    setReminderDate('');
+    setReminderTime('');
+  };
+
   return (
     <Drawer shouldScaleBackground={false} modal={true} open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
@@ -74,6 +94,9 @@ export function EventCard({ event, compact = false }: EventCardProps) {
                 </span>
                 {status !== 'none' && (
                   <config.icon className={cn("w-3 h-3", config.color)} />
+                )}
+                {hasReminder(event.id) && (
+                  <Bell className="w-3 h-3 text-neon-yellow" fill="currentColor" />
                 )}
               </div>
               <h3 className="text-lg font-bold font-display text-white leading-tight mb-1">
@@ -136,6 +159,60 @@ export function EventCard({ event, compact = false }: EventCardProps) {
                 <span className="font-display text-xs uppercase">Clear</span>
               </Button>
           </div>
+
+          {/* Reminder Section */}
+          <div className="p-4 border-t border-white/10">
+            <div className="flex items-center gap-2 mb-3">
+              <Bell className="w-4 h-4 text-neon-yellow" />
+              <h3 className="font-display text-sm uppercase tracking-wider text-white">Set Reminder</h3>
+            </div>
+
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="reminder-date" className="text-xs text-muted-foreground">Date</Label>
+                  <Input
+                    id="reminder-date"
+                    type="date"
+                    value={reminderDate}
+                    onChange={(e) => setReminderDate(e.target.value)}
+                    className="mt-1 bg-background/50 border-white/10"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="reminder-time" className="text-xs text-muted-foreground">Time</Label>
+                  <Input
+                    id="reminder-time"
+                    type="time"
+                    value={reminderTime}
+                    onChange={(e) => setReminderTime(e.target.value)}
+                    className="mt-1 bg-background/50 border-white/10"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSetReminder}
+                  disabled={!reminderDate || !reminderTime}
+                  className="flex-1 bg-neon-yellow/20 hover:bg-neon-yellow/30 text-neon-yellow border border-neon-yellow/30"
+                >
+                  <Bell className="w-4 h-4 mr-2" />
+                  Set Reminder
+                </Button>
+                {hasReminder(event.id) && (
+                  <Button
+                    onClick={handleClearReminder}
+                    variant="outline"
+                    className="border-destructive/50 text-destructive hover:bg-destructive/10"
+                  >
+                    <BellOff className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
           <DrawerFooter>
             <DrawerClose asChild>
               <Button variant="ghost" className="text-muted-foreground">Close</Button>

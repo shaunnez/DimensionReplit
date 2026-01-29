@@ -79,9 +79,28 @@ export default function Timetable({ category, title }: TimetableProps) {
             <h2 className="text-xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-neon-green to-white pl-2 border-l-4 border-neon-green">
               Site Map
             </h2>
-            <div className="p-6 rounded-xl border border-white/10 bg-card/40 backdrop-blur-md text-center">
-              <p className="text-muted-foreground font-mono text-sm">Map coming soon...</p>
+            <div className="rounded-xl border border-white/10 bg-card/40 backdrop-blur-md overflow-hidden">
+              <img
+                src="/map.PNG"
+                alt="Dimension Festival Site Map"
+                className="w-full h-auto"
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                  touchAction: 'pinch-zoom'
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const fallback = document.createElement('div');
+                  fallback.className = 'p-6 text-center';
+                  fallback.innerHTML = '<p class="text-muted-foreground font-mono text-sm">Map image not found. Please upload map.PNG to the public directory.</p>';
+                  e.currentTarget.parentElement?.appendChild(fallback);
+                }}
+              />
             </div>
+            <p className="text-xs text-muted-foreground text-center font-mono">
+              Pinch to zoom • Tap and drag to pan
+            </p>
           </div>
         </div>
       </div>
