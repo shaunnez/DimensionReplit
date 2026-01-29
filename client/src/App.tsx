@@ -5,12 +5,10 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import { Navigation } from "@/components/Navigation";
-import { NotificationBanner } from "@/components/NotificationBanner";
 import { IOSInstallPrompt } from "@/components/IOSInstallPrompt";
 import Home from "@/pages/Home";
 import Timetable from "@/pages/Timetable";
 import MySchedule from "@/pages/MySchedule";
-import Reminders from "@/pages/Reminders";
 import { AnimatePresence, motion } from "framer-motion";
 
 function Router() {
@@ -49,11 +47,6 @@ function Router() {
             <Timetable category="info" title="Festival Info" />
           </motion.div>
         </Route>
-        <Route path="/reminders">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <Reminders />
-          </motion.div>
-        </Route>
         <Route path="/schedule">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <MySchedule />
@@ -70,7 +63,6 @@ function App() {
     <WRouter hook={useHashLocation}>
     <QueryClientProvider client={queryClient}>
       <div className="bg-background text-foreground min-h-screen font-ui selection:bg-neon-cyan selection:text-black">
-        <NotificationBanner />
         <Router />
         <Navigation />
         <IOSInstallPrompt />

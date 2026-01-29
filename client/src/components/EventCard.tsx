@@ -1,9 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Event, EventStatus } from '../data';
+import { Event, EventStatus, FESTIVAL_START_DATE } from '../data';
 import { useSchedule } from '@/hooks/use-schedule';
-import { useReminders } from '@/hooks/use-reminders';
-import { Star, ThumbsUp, CheckCircle, Circle, Bell, BellOff, Calendar } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Star, ThumbsUp, CheckCircle, Circle, Calendar } from 'lucide-react';
+import { cn, downloadOrShareICS } from '@/lib/utils';
 import { useState } from 'react';
 import {
   Drawer,
@@ -16,8 +15,6 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 interface EventCardProps {
   event: Event;
@@ -33,14 +30,9 @@ const statusConfig: Record<EventStatus, { icon: any, color: string, label: strin
 
 export function EventCard({ event, compact = false }: EventCardProps) {
   const { getStatus, toggleStatus } = useSchedule();
-  const { getReminder, setReminder, clearReminder, hasReminder } = useReminders();
   const status = getStatus(event.id);
   const config = statusConfig[status];
   const [open, setOpen] = useState(false);
-
-  const reminder = getReminder(event.id);
-  const [reminderDate, setReminderDate] = useState(reminder?.reminderDate || '');
-  const [reminderTime, setReminderTime] = useState(reminder?.reminderTime || '');
 
   // Helper to format time display
   const formatTime = (time: string) => {
@@ -63,16 +55,8 @@ export function EventCard({ event, compact = false }: EventCardProps) {
     // Don't close drawer - let user continue interacting with the modal
   };
 
-  const handleSetReminder = async () => {
-    if (reminderDate && reminderTime) {
-      await setReminder(event.id, reminderDate, reminderTime, event.name);
-    }
-  };
-
-  const handleClearReminder = () => {
-    clearReminder(event.id);
-    setReminderDate('');
-    setReminderTime('');
+  const handleAddToCalendar = () => {
+    downloadOrShareICS(event, FESTIVAL_START_DATE);
   };
 
   return (
@@ -93,9 +77,6 @@ export function EventCard({ event, compact = false }: EventCardProps) {
                 </span>
                 {status !== 'none' && (
                   <config.icon className={cn("w-3 h-3", config.color)} />
-                )}
-                {hasReminder(event.id) && (
-                  <Bell className="w-3 h-3 text-neon-yellow" fill="currentColor" />
                 )}
               </div>
               <h3 className="text-lg font-bold font-display text-white leading-tight mb-1">
@@ -159,57 +140,18 @@ export function EventCard({ event, compact = false }: EventCardProps) {
               </Button>
           </div>
 
-          {/* Reminder Section */}
+          {/* Add to Calendar Section */}
           <div className="p-4 mt-4 border-t border-white/10">
-            <div className="flex items-center gap-2 mb-3">
-              <Bell className="w-4 h-4 text-neon-yellow" />
-              <h3 className="font-display text-sm uppercase tracking-wider text-white">Set Reminder</h3>
-            </div>
-
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-4 overflow-hidden">
-                <div className="min-w-0 flex flex-col overflow-hidden">
-                  <Label htmlFor="reminder-date" className="text-xs text-muted-foreground mb-1">Date</Label>
-                  <Input
-                    id="reminder-date"
-                    type="date"
-                    value={reminderDate}
-                    onChange={(e) => setReminderDate(e.target.value)}
-                    className="bg-background/50 border-white/10 max-w-full"
-                  />
-                </div>
-                <div className="min-w-0 flex flex-col overflow-hidden">
-                  <Label htmlFor="reminder-time" className="text-xs text-muted-foreground mb-1">Time</Label>
-                  <Input
-                    id="reminder-time"
-                    type="time"
-                    value={reminderTime}
-                    onChange={(e) => setReminderTime(e.target.value)}
-                    className="bg-background/50 border-white/10 max-w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleSetReminder}
-                  disabled={!reminderDate || !reminderTime}
-                  className="flex-1 bg-neon-yellow/20 hover:bg-neon-yellow/30 text-neon-yellow border border-neon-yellow/30"
-                >
-                  <Bell className="w-4 h-4 mr-2" />
-                  Set Reminder
-                </Button>
-                {hasReminder(event.id) && (
-                  <Button
-                    onClick={handleClearReminder}
-                    variant="outline"
-                    className="border-destructive/50 text-destructive hover:bg-destructive/10"
-                  >
-                    <BellOff className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
+            <Button
+              onClick={handleAddToCalendar}
+              className="w-full bg-neon-cyan/20 hover:bg-neon-cyan/30 text-neon-cyan border border-neon-cyan/30"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Add to Calendar
+            </Button>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Download event to your device calendar
+            </p>
           </div>
 
           <DrawerFooter>
