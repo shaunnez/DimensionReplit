@@ -715,22 +715,22 @@ const FESTIVAL_DATA = {
         {
           "day": "sat",
           "name": "Paige Julia",
+          "startTime": "23:00",
+          "endTime": "00:30",
+          "lengthMinutes": 90
+        },
+        {
+          "day": "sat",
+          "name": "Optimus Gryme",
           "startTime": "00:30",
           "endTime": "02:00",
           "lengthMinutes": 90
         },
         {
           "day": "sat",
-          "name": "Optimus Gryme",
+          "name": "Heathen",
           "startTime": "02:00",
           "endTime": "03:30",
-          "lengthMinutes": 90
-        },
-        {
-          "day": "sat",
-          "name": "Heathen",
-          "startTime": "03:30",
-          "endTime": "05:00",
           "lengthMinutes": 90
         },
         {
