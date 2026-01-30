@@ -713,7 +713,7 @@ const FESTIVAL_DATA = {
           "lengthMinutes": 90
         },
         {
-          "day": "sat",
+          "day": "fri",
           "name": "Paige Julia",
           "startTime": "23:00",
           "endTime": "00:30",
@@ -731,6 +731,13 @@ const FESTIVAL_DATA = {
           "name": "Heathen",
           "startTime": "02:00",
           "endTime": "03:30",
+          "lengthMinutes": 90
+        },
+        {
+          "day": "sat",
+          "name": "Tiabeanie",
+          "startTime": "03:30",
+          "endTime": "05:00",
           "lengthMinutes": 90
         },
         {
